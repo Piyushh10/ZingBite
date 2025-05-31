@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,95 +41,126 @@ import com.example.ZingBite.R
 import com.example.ZingBite.ui.ZingBiteTextField
 
 @Composable
-fun SignUpScreen(){
-    Box(modifier = Modifier.fillMaxSize()){
-        var name by remember {
-            mutableStateOf("")
-        }
-        var email by remember {
-            mutableStateOf("")
-        }
-        var password by remember {
-            mutableStateOf("")
-        }
+fun SignUpScreen() {
+    Box(modifier = Modifier.fillMaxSize()) {
+        var name by remember { mutableStateOf("") }
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
 
+        Image(
+            painter = painterResource(id = R.drawable.signup),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds
+        )
 
-        Image(painter= painterResource(id= R.drawable.signup), contentDescription = null,
-            modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .navigationBarsPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(110.dp)) // smaller top padding
 
-            Box(modifier = Modifier.height(150.dp))
-            Text(text="Sign Up", fontSize = 32.sp, fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth(), color = Color.Black
+            Text(
+                text = "Sign Up",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.Black
             )
-            Spacer(modifier = Modifier.height(36.dp))
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             ZingBiteTextField(
                 value = name,
-                onValueChange = {name = it},
+                onValueChange = { name = it },
                 label = {
                     Text(
                         text = "Full name",
                         color = Color.Gray,
                         fontSize = 16.sp,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
                     )
-                },  modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
             )
+
             ZingBiteTextField(
                 value = email,
-                onValueChange = {email = it},
+                onValueChange = { email = it },
                 label = {
                     Text(
                         text = "Email",
                         color = Color.Gray,
                         fontSize = 16.sp,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
                     )
-                },  modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
             )
+
             ZingBiteTextField(
                 value = password,
-                onValueChange = {password = it},
+                onValueChange = { password = it },
                 label = {
                     Text(
                         text = "Password",
                         color = Color.Gray,
                         fontSize = 16.sp,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
                     )
-                },  modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
                 visualTransformation = PasswordVisualTransformation(),
                 trailingIcon = {
                     Image(
-                        painter = painterResource(id= R.drawable.ic_eye),
+                        painter = painterResource(id = R.drawable.ic_eye),
                         contentDescription = null,
                         modifier = Modifier.size(24.dp)
                     )
                 }
             )
-            Spacer(modifier = Modifier.height(19.dp))
-            Button(onClick = {}, modifier = Modifier.height(48.dp),
-                colors= ButtonDefaults.buttonColors(containerColor = Color(0xFFFE724C))) {
-                Text(text = "Sign Up", color = Color.White, fontSize = 17.sp,
-                    modifier = Modifier.padding(horizontal = 32.dp))
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { },
+                modifier = Modifier
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFE724C))
+            ) {
+                Text(
+                    text = "Sign Up",
+                    color = Color.White,
+                    fontSize = 17.sp,
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                )
             }
-            Spacer(modifier = Modifier.height(19.dp))
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Already have an account? ",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Already have an account? ", color = Color.Black, fontSize = 16.sp)
                     Text(
                         text = "Log in",
                         color = Color(0xFFFE724C),
@@ -138,34 +170,24 @@ fun SignUpScreen(){
                     )
                 }
             }
-            Spacer(modifier=Modifier.padding(16.dp))
-            // ⬇️ Divider with "sign in with"
+
+            Spacer(modifier = Modifier.weight(1f)) // 👈 Dynamic spacer that pushes everything above
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                Divider(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(1.dp),
-                    color = Color.Black
-                )
+                Divider(modifier = Modifier.weight(1f).height(1.dp), color = Color.Black)
                 Text(
-                    text = " "+ stringResource(R.string.signin) +" ",
+                    text = " ${stringResource(R.string.signin)} ",
                     color = Color.Black,
                     fontSize = 16.sp
                 )
-                Divider(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(1.dp),
-                    color = Color.Black
-                )
+                Divider(modifier = Modifier.weight(1f).height(1.dp), color = Color.Black)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Google Sign-In Button
             OutlinedButton(
                 onClick = { /* handle google sign in */ },
                 modifier = Modifier
@@ -183,9 +205,12 @@ fun SignUpScreen(){
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Continue with Google", color = Color.Black, fontSize = 17.sp)
             }
+
+            Spacer(modifier = Modifier.height(8.dp)) // for bottom spacing
         }
     }
 }
+
 
 
 @Preview(showBackground = true)
