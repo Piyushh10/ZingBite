@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">ZingBite</string>
     <string name="skip">Skip</string>
+    <string name="welcome">Welcome to</string>
+    <string name="signin"> sign in with </string>
 </resources>

@@ -8,6 +8,7 @@ import android.view.animation.OvershootInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -18,6 +19,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.ZingBite.data.FoodApi
+import com.example.ZingBite.ui.features.auth.AuthScreen
+import com.example.ZingBite.ui.features.auth.signup.SignUpScreen
 import com.example.ZingBite.ui.theme.FoodETheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -59,10 +62,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             FoodETheme {
                 Scaffold(modifier = Modifier.fillMaxSize()){innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    Box(modifier = Modifier.padding(innerPadding))
+                    SignUpScreen()
                 }
             }
         }

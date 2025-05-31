@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.foode"
+    namespace = "com.example.ZingBite"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.foode"
+        applicationId = "com.example.ZingBite"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

@@ -40,10 +40,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.foode.R
+import com.example.ZingBite.R
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun AuthScreen() {
@@ -100,7 +99,7 @@ fun AuthScreen() {
             Text(
                 text = buildAnnotatedString {
                     withStyle(style = SpanStyle(color = Color.Black)) {
-                        append("Welcome to\n")
+                        append(stringResource(R.string.welcome)+"\n")
                     }
                     withStyle(style = SpanStyle(color = Color(0xFFFE724C))) {
                         append("ZingBite")
@@ -115,7 +114,7 @@ fun AuthScreen() {
 
             Text(
                 text = "Hungry?Let ZingBite handle it.",
-                fontSize = 20.sp,
+                fontSize = 18.sp,
                 color = Color.Gray,
             )
         }
@@ -135,9 +134,9 @@ fun AuthScreen() {
                 color = Color.LightGray
             )
             Text(
-                text = "  sign in with  ",
+                text = " "+stringResource(R.string.signin)+" ",
                 color = Color.Gray,
-                fontSize = 17.sp
+                fontSize = 16.sp
             )
             Divider(
                 modifier = Modifier
@@ -192,12 +191,12 @@ fun AuthScreen() {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Already have an account? ", color = Color.Gray, fontSize = 17.sp)
+            Text("Already have an account? ", color = Color.Gray, fontSize = 16.sp)
             Text(
                 text = "Sign in",
                 color = Color(0xFFFE724C),
                 fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
+                fontSize = 16.sp,
                 modifier = Modifier.clickable { /* handle sign in */ }
             )
         }
