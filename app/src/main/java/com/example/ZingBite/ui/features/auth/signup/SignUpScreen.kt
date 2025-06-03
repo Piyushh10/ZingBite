@@ -29,6 +29,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -51,12 +52,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.ZingBite.R
 import com.example.ZingBite.ui.ZingBiteTextField
+import com.example.ZingBite.ui.features.auth.AuthScreen
+import com.example.ZingBite.ui.navigation.AuthScreen
+import com.example.ZingBite.ui.navigation.Home
+import com.example.ZingBite.ui.navigation.Login
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
+fun SignUpScreen(navController: NavController,viewModel: SignUpViewModel = hiltViewModel()) {
     Box(modifier = Modifier.fillMaxSize()) {
         val name = viewModel.name.collectAsStateWithLifecycle()
         val email = viewModel.email.collectAsStateWithLifecycle()
@@ -86,13 +93,14 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
             viewModel.navigationEvent.collectLatest{ event ->
                 when(event){
                     is SignUpViewModel.SigupNavigationEvent.NavigateToHome->{
-                        Toast.makeText(
-                            context,
-                            "Sign up successful",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else ->{
-
+                        navController.navigate(Home){
+                            popUpTo(AuthScreen){
+                                inclusive=true
+                            }
+                        }
+                    }
+                    is SignUpViewModel.SigupNavigationEvent.NavigateToLogin ->{
+                        navController.navigate(Login)
                     }
                 }
             }
@@ -233,13 +241,16 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Already have an account? ", color = Color.Black, fontSize = 16.sp)
-                    Text(
-                        text = "Log in",
-                        color = Color(0xFFFE724C),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        modifier = Modifier.clickable { /* handle sign in */ }
-                    )
+                    TextButton(onClick = {
+                        viewModel.onLoginClicked()
+                    }) {
+                        Text(
+                            text = "Sign in",
+                            color = Color(0xFFFE724C),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
 
@@ -288,5 +299,5 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
 @Preview(showBackground = true)
 @Composable
 fun PreviousSignUpScreen(){
-    SignUpScreen()
+    SignUpScreen(rememberNavController())
 }

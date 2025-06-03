@@ -40,12 +40,15 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.ZingBite.R
+import com.example.ZingBite.ui.navigation.Login
+import com.example.ZingBite.ui.navigation.SignUp
 
 
 @Composable
 @Preview
-fun AuthScreen() {
+fun AuthScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -171,7 +174,9 @@ fun AuthScreen() {
 
         // Start with Email or Phone Button (Orange)
         Button(
-            onClick = { /* handle email/phone */ },
+            onClick = {
+                navController.navigate(SignUp)
+            },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFFE724C)
             ),
@@ -181,7 +186,7 @@ fun AuthScreen() {
                 .height(50.dp),
             shape = RoundedCornerShape(8.dp)
         ) {
-            Text("Start with Email or Phone", color = Color.White, fontSize = 17.sp)
+            Text("Sign in with Email", color = Color.White, fontSize = 17.sp)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -192,13 +197,16 @@ fun AuthScreen() {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Already have an account? ", color = Color.Gray, fontSize = 16.sp)
-            Text(
-                text = "Sign in",
-                color = Color(0xFFFE724C),
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                modifier = Modifier.clickable { /* handle sign in */ }
-            )
+            TextButton(onClick = {
+                navController.navigate(Login)
+            }) {
+                Text(
+                    text = "Sign in",
+                    color = Color(0xFFFE724C),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 }

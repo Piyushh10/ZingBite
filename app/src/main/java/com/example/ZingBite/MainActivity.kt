@@ -72,12 +72,12 @@ class MainActivity : ComponentActivity() {
             FoodETheme {
                 Scaffold(modifier = Modifier.fillMaxSize()){innerPadding ->
                     val navController = rememberNavController()
-                    NavHost(navController=navController, startDestination = SignUp, modifier = Modifier.padding(innerPadding)){
+                    NavHost(navController=navController, startDestination = AuthScreen, modifier = Modifier.padding(innerPadding)){
                         composable<SignUp>{
-                            SignUpScreen()
+                            SignUpScreen(navController)
                         }
                         composable<AuthScreen>{
-                            AuthScreen()
+                            AuthScreen(navController)
                         }
                         composable<Login>{
                             Box(modifier = Modifier.fillMaxSize().background(Color.Green)){}
