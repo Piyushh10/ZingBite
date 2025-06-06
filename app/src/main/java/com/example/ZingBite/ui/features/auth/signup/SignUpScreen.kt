@@ -26,6 +26,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -63,7 +64,7 @@ import com.example.ZingBite.ui.navigation.Login
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun SignUpScreen(navController: NavController,viewModel: SignUpViewModel = hiltViewModel()) {
+fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = hiltViewModel()) {
     Box(modifier = Modifier.fillMaxSize()) {
         val name = viewModel.name.collectAsStateWithLifecycle()
         val email = viewModel.email.collectAsStateWithLifecycle()
@@ -72,34 +73,32 @@ fun SignUpScreen(navController: NavController,viewModel: SignUpViewModel = hiltV
         val errorMessage = remember { mutableStateOf<String?>(null) }
         val loading = remember { mutableStateOf(false) }
 
-        when(uiState.value){
-
+        when(uiState.value) {
             is SignUpViewModel.SignupEvent.Error -> {
-                loading.value=false
-                errorMessage.value="Failed"
+                loading.value = false
+                errorMessage.value = "Failed"
             }
             is SignUpViewModel.SignupEvent.Loading -> {
-                loading.value =true
-                errorMessage.value= null
-
+                loading.value = true
+                errorMessage.value = null
             }
-            else ->{
-                loading.value=false
+            else -> {
+                loading.value = false
             }
         }
 
         val context = LocalContext.current
         LaunchedEffect(true) {
-            viewModel.navigationEvent.collectLatest{ event ->
-                when(event){
-                    is SignUpViewModel.SigupNavigationEvent.NavigateToHome->{
-                        navController.navigate(Home){
-                            popUpTo(AuthScreen){
-                                inclusive=true
+            viewModel.navigationEvent.collectLatest { event ->
+                when(event) {
+                    is SignUpViewModel.SigupNavigationEvent.NavigateToHome -> {
+                        navController.navigate(Home) {
+                            popUpTo(AuthScreen) {
+                                inclusive = true
                             }
                         }
                     }
-                    is SignUpViewModel.SigupNavigationEvent.NavigateToLogin ->{
+                    is SignUpViewModel.SigupNavigationEvent.NavigateToLogin -> {
                         navController.navigate(Login)
                     }
                 }
@@ -120,7 +119,7 @@ fun SignUpScreen(navController: NavController,viewModel: SignUpViewModel = hiltV
                 .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(110.dp)) // smaller top padding
+            Spacer(modifier = Modifier.height(110.dp))
 
             Text(
                 text = "Sign Up",
@@ -137,7 +136,7 @@ fun SignUpScreen(navController: NavController,viewModel: SignUpViewModel = hiltV
                 onValueChange = { viewModel.onNameChange(it) },
                 label = {
                     Text(
-                        text = "Full name",
+                        text = "Name",
                         color = Color.Gray,
                         fontSize = 16.sp,
                         modifier = Modifier
@@ -193,17 +192,20 @@ fun SignUpScreen(navController: NavController,viewModel: SignUpViewModel = hiltV
                     )
                 }
             )
+
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text=errorMessage.value?:"", color = Color.Red)
+            Text(text = errorMessage.value ?: "", color = Color.Red)
 
             Button(
                 onClick = viewModel::onSignUpClick,
                 modifier = Modifier
+                    .fillMaxWidth()
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFE724C))
             ) {
                 Box {
-                    AnimatedContent(targetState = loading.value,
+                    AnimatedContent(
+                        targetState = loading.value,
                         transitionSpec = {
                             fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.8f) togetherWith
                                     fadeOut(animationSpec = tween(300)) + scaleOut(targetScale = 0.8f)
@@ -224,10 +226,7 @@ fun SignUpScreen(navController: NavController,viewModel: SignUpViewModel = hiltV
                                 modifier = Modifier.padding(horizontal = 32.dp)
                             )
                         }
-
                     }
-
-
                 }
             }
 
@@ -254,25 +253,25 @@ fun SignUpScreen(navController: NavController,viewModel: SignUpViewModel = hiltV
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f)) // 👈 Dynamic spacer that pushes everything above
+            Spacer(modifier = Modifier.weight(1f))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                Divider(modifier = Modifier.weight(1f).height(1.dp), color = Color.Black)
+                HorizontalDivider(modifier = Modifier.weight(1f).height(1.dp), color = Color.Black)
                 Text(
                     text = " ${stringResource(R.string.signin)} ",
                     color = Color.Black,
                     fontSize = 16.sp
                 )
-                Divider(modifier = Modifier.weight(1f).height(1.dp), color = Color.Black)
+                HorizontalDivider(modifier = Modifier.weight(1f).height(1.dp), color = Color.Black)
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedButton(
-                onClick = { /* handle google sign in */ },
+                onClick = { viewModel.onGoogleSignInClicked(context) },
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
@@ -289,12 +288,10 @@ fun SignUpScreen(navController: NavController,viewModel: SignUpViewModel = hiltV
                 Text("Continue with Google", color = Color.Black, fontSize = 17.sp)
             }
 
-            Spacer(modifier = Modifier.height(8.dp)) // for bottom spacing
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
-
-
 
 @Preview(showBackground = true)
 @Composable

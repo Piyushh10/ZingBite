@@ -1,5 +1,8 @@
 package com.example.ZingBite.ui.features.auth.signup
 
+import android.content.Context
+import androidx.credentials.CredentialManager
+import androidx.lifecycle.ViewModel
 import com.example.ZingBite.data.FoodApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -9,11 +12,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import com.example.ZingBite.data.models.SignInRequest
 import com.example.ZingBite.data.models.SignUpRequest
+import com.example.ZingBite.ui.features.auth.login.SignInViewModel.SigInNavigationEvent
+import com.example.ZingBite.ui.features.auth.login.SignInViewModel.SignInEvent
+import com.example.ZingBite.data.auth.GoogleAuthUiProvider
+
 
 @HiltViewModel
-class SignUpViewModel @Inject constructor(val foodApi: FoodApi, val session:FoodHubSession) :
-    BaseAuthViewModel(foodApi) {
+class SignUpViewModel @Inject constructor(val foodApi: FoodApi) :
+    ViewModel() {
+    val googleAuthUiProvider = GoogleAuthUiProvider()
     private val _uiState = MutableStateFlow<SignupEvent>(SignupEvent.Nothing)
     val uiState = _uiState.asStateFlow()
 
@@ -45,44 +54,18 @@ class SignUpViewModel @Inject constructor(val foodApi: FoodApi, val session:Food
         viewModelScope.launch {
             _uiState.value = SignupEvent.Loading
             try {
-                val response = safeApiCall {
-                    foodApi.signUp(
-                        SignUpRequest(
-                            name = name.value,
-                            email = email.value,
-                            password = password.value
-                        )
+                val response = foodApi.signUp(
+                    SignUpRequest(
+                        email = email.value, password = password.value, name = name.value
                     )
-                }
-                when (response) {
-                    is ApiResponse.Success -> {
-                        _uiState.value = SignupEvent.Success
-                        session.storeToken(response.data.token)
-                        _navigationEvent.emit(SigupNavigationEvent.NavigateToHome)
-                    }
-
-                    else -> {
-                        val errr = (response as? ApiResponse.Error)?.code ?: 0
-                        error = "Sign In Failed"
-                        errorDescription = "Failed to sign up"
-                        when (errr) {
-                            400 -> {
-                                error = "Invalid Credintials"
-                                errorDescription = "Please enter correct details."
-                            }
-                        }
-                        _uiState.value = SignupEvent.Error
-                    }
-                }
-
-
-            } catch (e: Exception) {
+                )
+                _uiState.value = SignupEvent.Success
+                _navigationEvent.emit(SigupNavigationEvent.NavigateToHome)
+            } catch(e: Exception) {
                 e.printStackTrace()
                 _uiState.value = SignupEvent.Error
             }
-
         }
-
     }
 
     fun onLoginClicked() {
@@ -91,33 +74,30 @@ class SignUpViewModel @Inject constructor(val foodApi: FoodApi, val session:Food
         }
     }
 
-    override fun loading() {
+    fun loading() {
         viewModelScope.launch {
             _uiState.value = SignupEvent.Loading
         }
     }
 
-    override fun onGoogleError(msg: String) {
+    fun onGoogleSignInClicked(context : Context) {
         viewModelScope.launch {
-            errorDescription = msg
-            error = "Google Sign In Failed"
-            _uiState.value = SignupEvent.Error
-        }
-    }
-
-    override fun onFacebookError(msg: String) {
-        viewModelScope.launch {
-            errorDescription = msg
-            error = "Facebook Sign In Failed"
-            _uiState.value = SignupEvent.Error
-        }
-    }
-
-    override fun onSocialLoginSuccess(token: String) {
-        viewModelScope.launch {
-            session.storeToken(token)
-            _uiState.value = SignupEvent.Success
-            _navigationEvent.emit(SigupNavigationEvent.NavigateToHome)
+            _uiState.value = SignupEvent.Loading
+            try {
+                val response = googleAuthUiProvider.signIn(
+                    context,
+                    CredentialManager.create(context)
+                )
+                if(response != null) {
+                    _uiState.value = SignupEvent.Success
+                    _navigationEvent.emit(SigupNavigationEvent.NavigateToHome)
+                } else {
+                    _uiState.value = SignupEvent.Error
+                }
+            } catch(e: Exception) {
+                e.printStackTrace()
+                _uiState.value = SignupEvent.Error
+            }
         }
     }
 
@@ -127,6 +107,7 @@ class SignUpViewModel @Inject constructor(val foodApi: FoodApi, val session:Food
     }
 
     sealed class SignupEvent {
+        object Nothing : SignupEvent()
         object Success : SignupEvent()
         object Error : SignupEvent()
         object Loading : SignupEvent()

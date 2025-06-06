@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -40,18 +41,25 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ZingBite.R
+import com.example.ZingBite.ui.features.auth.login.SignInViewModel
 import com.example.ZingBite.ui.navigation.Login
 import com.example.ZingBite.ui.navigation.SignUp
 
 
 @Composable
-fun AuthScreen(navController: NavController) {
+fun AuthScreen(
+    navController: NavController,
+    viewModel: SignInViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(Color.White)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Top Curved Image
@@ -152,7 +160,7 @@ fun AuthScreen(navController: NavController) {
 
         // Google Sign-In Button
         OutlinedButton(
-            onClick = { /* handle google sign in */ },
+            onClick = { viewModel.onGoogleSignInClicked(context) },
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
@@ -188,17 +196,21 @@ fun AuthScreen(navController: NavController) {
             Text("Sign in with Email", color = Color.White, fontSize = 17.sp)
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
         // Sign In Row
         Row(
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
         ) {
             Text("Already have an account? ", color = Color.Gray, fontSize = 16.sp)
-            TextButton(onClick = {
-                navController.navigate(Login)
-            }) {
+            TextButton(
+                onClick = { navController.navigate(Login) },
+                contentPadding = PaddingValues(0.dp)
+            ) {
                 Text(
                     text = "Sign in",
                     color = Color(0xFFFE724C),

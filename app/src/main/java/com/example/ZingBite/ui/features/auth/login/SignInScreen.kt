@@ -17,9 +17,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -64,7 +66,7 @@ import com.example.ZingBite.ui.navigation.SignUp
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun SignInScreen(navController: NavController,viewModel: SignInViewModel = hiltViewModel()) {
+fun SignInScreen(navController: NavController, viewModel: SignInViewModel = hiltViewModel()) {
     Box(modifier = Modifier.fillMaxSize()) {
         val email = viewModel.email.collectAsStateWithLifecycle()
         val password = viewModel.password.collectAsStateWithLifecycle()
@@ -72,34 +74,32 @@ fun SignInScreen(navController: NavController,viewModel: SignInViewModel = hiltV
         val errorMessage = remember { mutableStateOf<String?>(null) }
         val loading = remember { mutableStateOf(false) }
 
-        when(uiState.value){
-
+        when(uiState.value) {
             is SignInViewModel.SignInEvent.Error -> {
-                loading.value=false
-                errorMessage.value="Failed"
+                loading.value = false
+                errorMessage.value = "Failed"
             }
             is SignInViewModel.SignInEvent.Loading -> {
-                loading.value =true
-                errorMessage.value= null
-
+                loading.value = true
+                errorMessage.value = null
             }
-            else ->{
-                loading.value=false
+            else -> {
+                loading.value = false
             }
         }
 
         val context = LocalContext.current
         LaunchedEffect(true) {
-            viewModel.navigationEvent.collectLatest{ event ->
-                when(event){
-                    is SignInViewModel.SigInNavigationEvent.NavigateToHome->{
-                        navController.navigate(Home){
-                            popUpTo(AuthScreen){
-                                inclusive=true
+            viewModel.navigationEvent.collectLatest { event ->
+                when(event) {
+                    is SignInViewModel.SigInNavigationEvent.NavigateToHome -> {
+                        navController.navigate(Home) {
+                            popUpTo(AuthScreen) {
+                                inclusive = true
                             }
                         }
                     }
-                    is SignInViewModel.SigInNavigationEvent.NavigateToSignUp ->{
+                    is SignInViewModel.SigInNavigationEvent.NavigateToSignUp -> {
                         navController.navigate(SignUp)
                     }
                 }
@@ -120,7 +120,7 @@ fun SignInScreen(navController: NavController,viewModel: SignInViewModel = hiltV
                 .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(110.dp)) // smaller top padding
+            Spacer(modifier = Modifier.height(110.dp))
 
             Text(
                 text = "Sign In",
@@ -131,7 +131,6 @@ fun SignInScreen(navController: NavController,viewModel: SignInViewModel = hiltV
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-
 
             ZingBiteTextField(
                 value = email.value,
@@ -176,17 +175,20 @@ fun SignInScreen(navController: NavController,viewModel: SignInViewModel = hiltV
                     )
                 }
             )
+
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text=errorMessage.value?:"", color = Color.Red)
+            Text(text = errorMessage.value ?: "", color = Color.Red)
 
             Button(
                 onClick = viewModel::onSignInClick,
                 modifier = Modifier
+                    .fillMaxWidth()
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFE724C))
             ) {
                 Box {
-                    AnimatedContent(targetState = loading.value,
+                    AnimatedContent(
+                        targetState = loading.value,
                         transitionSpec = {
                             fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.8f) togetherWith
                                     fadeOut(animationSpec = tween(300)) + scaleOut(targetScale = 0.8f)
@@ -207,10 +209,7 @@ fun SignInScreen(navController: NavController,viewModel: SignInViewModel = hiltV
                                 modifier = Modifier.padding(horizontal = 32.dp)
                             )
                         }
-
                     }
-
-
                 }
             }
 
@@ -237,7 +236,7 @@ fun SignInScreen(navController: NavController,viewModel: SignInViewModel = hiltV
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f)) // 👈 Dynamic spacer that pushes everything above
+            Spacer(modifier = Modifier.weight(1f))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -255,9 +254,8 @@ fun SignInScreen(navController: NavController,viewModel: SignInViewModel = hiltV
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedButton(
-                onClick = { /* handle google sign in */ },
+                onClick = { viewModel.onGoogleSignInClicked(context) },
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = RoundedCornerShape(8.dp)
@@ -272,12 +270,10 @@ fun SignInScreen(navController: NavController,viewModel: SignInViewModel = hiltV
                 Text("Continue with Google", color = Color.Black, fontSize = 17.sp)
             }
 
-            Spacer(modifier = Modifier.height(8.dp)) // for bottom spacing
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
-
-
 
 @Preview(showBackground = true)
 @Composable

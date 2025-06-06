@@ -23,8 +23,8 @@ data class RestaurantDetails(
     val restaurantImageUrl: String,
 ) : NavRoute
 
-@Serializable
-data class FoodDetails(val foodItem: FoodItem) : NavRoute
+//@Serializable
+//data class FoodDetails(val foodItem: FoodItem) : NavRoute
 
 @Serializable
 object Cart : NavRoute

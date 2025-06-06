@@ -1,5 +1,8 @@
 package com.example.ZingBite.ui.features.auth.login
 
+import android.content.Context
+import androidx.credentials.CredentialManager
+import androidx.lifecycle.ViewModel
 import com.example.ZingBite.data.FoodApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -9,15 +12,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import com.example.ZingBite.data.auth.GoogleAuthUiProvider
+import com.example.ZingBite.data.models.SignInRequest
 import com.example.ZingBite.data.models.SignUpRequest
+import android.util.Log
+import androidx.credentials.exceptions.GetCredentialException
+import com.example.ZingBite.data.models.OAuthRequest
 
 @HiltViewModel
 class SignInViewModel @Inject constructor(
-    override val foodApi: FoodApi,
-    val session: FoodHubSession
-) :
-    BaseAuthViewModel(foodApi) {
-
+    val foodApi: FoodApi) : ViewModel(){
+        val googleAuthUiProvider = GoogleAuthUiProvider()
     private val _uiState = MutableStateFlow<SignInEvent>(SignInEvent.Nothing)
     val uiState = _uiState.asStateFlow()
 
@@ -41,32 +46,76 @@ class SignInViewModel @Inject constructor(
     fun onSignInClick() {
         viewModelScope.launch {
             _uiState.value = SignInEvent.Loading
-            val response = safeApiCall {
-                foodApi.signIn(
+            try {
+                val response = foodApi.signIn(
                     SignInRequest(
                         email = email.value, password = password.value
                     )
                 )
+                _uiState.value = SignInEvent.Success
+                _navigationEvent.emit(SigInNavigationEvent.NavigateToHome)
+            } catch(e: Exception) {
+                e.printStackTrace()
+                _uiState.value = SignInEvent.Error
             }
-            when (response) {
-                is ApiResponse.Success -> {
-                    _uiState.value = SignInEvent.Success
-                    session.storeToken(response.data.token)
-                    _navigationEvent.emit(SigInNavigationEvent.NavigateToHome)
-                }
+        }
+    }
 
-                else -> {
-                    val errr = (response as? ApiResponse.Error)?.code ?: 0
-                    error = "Sign In Failed"
-                    errorDescription = "Failed to sign up"
-                    when (errr) {
-                        400 -> {
-                            error = "Invalid Credintials"
-                            errorDescription = "Please enter correct details."
+    fun onGoogleSignInClicked(context : Context) {
+        viewModelScope.launch {
+            try {
+                Log.d("SignInViewModel", "Starting Google Sign-In flow")
+                _uiState.value = SignInEvent.Loading
+                val credentialManager = CredentialManager.create(context)
+                Log.d("SignInViewModel", "Created CredentialManager")
+                
+                try {
+                    val response = googleAuthUiProvider.signIn(
+                        context,
+                        credentialManager
+                    )
+                    Log.d("SignInViewModel", "Got response from Google Sign-In: ${response != null}")
+                    
+                    if(response != null) {
+                        Log.d("SignInViewModel", "Google Sign-In successful, token length: ${response.token.length}")
+                        val request = OAuthRequest(
+                            token = response.token,
+                            provider = "google"
+                        )
+                        Log.d("SignInViewModel", "Making OAuth request to backend")
+                        try {
+                            val res = foodApi.oAuth(request)
+                            Log.d("SignInViewModel", "Got response from OAuth endpoint: ${res != null}")
+                            if(res.token.isNotEmpty()){
+                                Log.d("SignInViewModel", "OAuth successful, token length: ${res.token.length}")
+                                _uiState.value = SignInEvent.Success
+                                _navigationEvent.emit(SigInNavigationEvent.NavigateToHome)
+                            }
+                            else {
+                                Log.e("SignInViewModel", "Empty token in OAuth response")
+                                _uiState.value = SignInEvent.Error
+                            }
+                        } catch (e: Exception) {
+                            Log.e("SignInViewModel", "Error during OAuth request: ${e.message}", e)
+                            _uiState.value = SignInEvent.Error
                         }
                     }
-                    _uiState.value = SignInEvent.Error
+                    else {
+                        Log.e("SignInViewModel", "Null response from Google Sign-In")
+                        _uiState.value = SignInEvent.Error
+                    }
+                } catch (e: GetCredentialException) {
+                    Log.e("SignInViewModel", "Error during credential retrieval: ${e.message}", e)
+                    if (e.message?.contains("canceled", ignoreCase = true) == true) {
+                        _uiState.value = SignInEvent.Nothing
+                    } else {
+                        _uiState.value = SignInEvent.Error
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e("SignInViewModel", "Error during Google Sign-In", e)
+                e.printStackTrace()
+                _uiState.value = SignInEvent.Error
             }
         }
     }
@@ -89,33 +138,17 @@ class SignInViewModel @Inject constructor(
         object Loading : SignInEvent()
     }
 
-    override fun loading() {
+    fun loading() {
         viewModelScope.launch {
             _uiState.value = SignInEvent.Loading
         }
     }
 
-    override fun onGoogleError(msg: String) {
+    fun onSocialLoginSuccess(token: String) {
         viewModelScope.launch {
-            errorDescription = msg
-            error = "Google Sign In Failed"
-            _uiState.value = SignInEvent.Error
-        }
-    }
-
-    override fun onFacebookError(msg: String) {
-        viewModelScope.launch {
-            errorDescription = msg
-            error = "Facebook Sign In Failed"
-            _uiState.value = SignInEvent.Error
-        }
-    }
-
-    override fun onSocialLoginSuccess(token: String) {
-        viewModelScope.launch {
-            session.storeToken(token)
             _uiState.value = SignInEvent.Success
             _navigationEvent.emit(SigInNavigationEvent.NavigateToHome)
         }
     }
+
 }
