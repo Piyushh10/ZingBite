@@ -47,7 +47,6 @@ import com.example.ZingBite.ui.navigation.SignUp
 
 
 @Composable
-@Preview
 fun AuthScreen(navController: NavController) {
     Column(
         modifier = Modifier
