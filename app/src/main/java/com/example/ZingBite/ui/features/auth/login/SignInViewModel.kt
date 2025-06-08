@@ -14,6 +14,7 @@ import com.example.ZingBite.data.models.SignInRequest
 import androidx.activity.ComponentActivity
 import androidx.credentials.CredentialManager
 import com.example.ZingBite.data.auth.GoogleAuthUiProvider
+import com.example.ZingBite.ui.features.auth.AuthScreenViewModel.AuthEvent
 import com.example.ZingBite.ui.features.auth.BaseAuthViewModel
 import com.example.ZingBite.ui.features.auth.signup.SignUpViewModel.SignupEvent
 import com.example.ZingBite.ui.features.auth.signup.SignUpViewModel.SigupNavigationEvent
@@ -107,7 +108,9 @@ class SignInViewModel @Inject constructor(
 
     override fun onGoogleError(msg: String) {
         viewModelScope.launch {
-            _uiState.value=SignInEvent.Error
+            errorDescription = msg
+            error = "Google Sign In Failed"
+            _uiState.value= SignInEvent.Error
         }
     }
 

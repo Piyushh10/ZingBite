@@ -17,6 +17,7 @@ import com.example.ZingBite.data.models.SignUpRequest
 import com.example.ZingBite.ui.features.auth.login.SignInViewModel.SigInNavigationEvent
 import com.example.ZingBite.ui.features.auth.login.SignInViewModel.SignInEvent
 import com.example.ZingBite.data.auth.GoogleAuthUiProvider
+import com.example.ZingBite.ui.features.auth.AuthScreenViewModel.AuthEvent
 import com.example.ZingBite.ui.features.auth.BaseAuthViewModel
 
 
@@ -83,7 +84,9 @@ class SignUpViewModel @Inject constructor(override val foodApi: FoodApi) :
 
     override fun onGoogleError(msg: String) {
         viewModelScope.launch {
-            _uiState.value=SignupEvent.Error
+            errorDescription = msg
+            error = "Google Sign In Failed"
+            _uiState.value= SignupEvent.Error
         }
     }
 

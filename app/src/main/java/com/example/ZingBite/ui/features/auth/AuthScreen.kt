@@ -44,16 +44,26 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ZingBite.R
+import com.example.ZingBite.ui.BasicDialog
 import com.example.ZingBite.ui.features.auth.login.SignInViewModel
+import com.example.ZingBite.ui.features.auth.signup.SignUpViewModel
+import com.example.ZingBite.ui.navigation.Home
 import com.example.ZingBite.ui.navigation.Login
 import com.example.ZingBite.ui.navigation.SignUp
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(
     navController: NavController,
-    viewModel: SignInViewModel = hiltViewModel()
+    viewModel: SignUpViewModel = hiltViewModel()
 ) {
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var showDialog by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     Column(
         modifier = Modifier
@@ -77,6 +87,23 @@ fun AuthScreen(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
+
+            LaunchedEffect(true) {
+                viewModel.navigationEvent.collectLatest { event ->
+                    when(event) {
+                        is SignUpViewModel.SigupNavigationEvent.NavigateToHome -> {
+                            navController.navigate(Home) {
+                                popUpTo(com.example.ZingBite.ui.navigation.AuthScreen) {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                        is SignUpViewModel.SigupNavigationEvent.NavigateToLogin -> {
+                            navController.navigate(SignUp)
+                        }
+                    }
+                }
+            }
 
             TextButton(
                 onClick = { /* handle skip */ },
@@ -220,4 +247,19 @@ fun AuthScreen(
             }
         }
     }
+    if (showDialog) {
+        ModalBottomSheet(onDismissRequest = { showDialog = false }, sheetState = sheetState) {
+            BasicDialog(
+                title = viewModel.error,
+                description = viewModel.errorDescription,
+                onClick = {
+                    scope.launch {
+                        sheetState.hide()
+                        showDialog = false
+                    }
+                }
+            )
+        }
+    }
+
 }

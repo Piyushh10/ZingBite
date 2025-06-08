@@ -17,12 +17,12 @@ class AuthScreenViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<AuthEvent>(AuthEvent.Nothing)
     val uiState = _uiState.asStateFlow()
 
-    private val _navigationEvent = MutableSharedFlow<SigInNavigationEvent>()
+    private val _navigationEvent = MutableSharedFlow<AuthNavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
-    sealed class SigInNavigationEvent {
-        object NavigateToSignUp : SigInNavigationEvent()
-        object NavigateToHome : SigInNavigationEvent()
+    sealed class AuthNavigationEvent {
+        object NavigateToSignUp : AuthNavigationEvent()
+        object NavigateToHome : AuthNavigationEvent()
     }
 
     sealed class AuthEvent {
@@ -40,6 +40,8 @@ class AuthScreenViewModel @Inject constructor(
 
     override fun onGoogleError(msg: String) {
         viewModelScope.launch {
+            errorDescription = msg
+            error = "Google Sign In Failed"
             _uiState.value=AuthEvent.Error
         }
     }
@@ -47,7 +49,7 @@ class AuthScreenViewModel @Inject constructor(
     override fun onSocialLoginSuccess(token: String) {
         viewModelScope.launch {
             _uiState.value = AuthEvent.Success
-            _navigationEvent.emit(SigInNavigationEvent.NavigateToHome)
+            _navigationEvent.emit(AuthNavigationEvent.NavigateToHome)
         }
     }
 

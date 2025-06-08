@@ -2,11 +2,11 @@ package com.example.ZingBite.data
 
 import androidx.credentials.webauthn.AuthenticatorResponse
 import com.example.ZingBite.data.models.AuthResponse
+import retrofit2.Response
 import com.example.ZingBite.data.models.OAuthRequest
 import com.example.ZingBite.data.models.SignInRequest
 import com.example.ZingBite.data.models.SignUpRequest
 import okhttp3.MultipartBody
-import okhttp3.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -28,13 +28,13 @@ interface FoodApi {
 //    ): Response<ResturauntsResponse>
 
     @POST("/auth/signup")
-    suspend fun signUp(@Body request: SignUpRequest) : AuthResponse
+    suspend fun signUp(@Body request: SignUpRequest) : Response<AuthResponse>
 
     @POST("/auth/login")
-    suspend fun signIn(@Body request: SignInRequest) : AuthResponse
+    suspend fun signIn(@Body request: SignInRequest) : Response<AuthResponse>
 
     @POST("/auth/oauth")
-    suspend fun oAuth(@Body request: OAuthRequest) : AuthResponse
+    suspend fun oAuth(@Body request: OAuthRequest) : Response<AuthResponse>
 //
 //    @GET("/restaurants/{restaurantId}/menu")
 //    suspend fun getFoodItemForRestaurant(@Path("restaurantId") restaurantId: String): Response<FoodItemResponse>

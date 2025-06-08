@@ -8,54 +8,35 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ZingBite.data.FoodApi
 import com.example.ZingBite.data.auth.GoogleAuthUiProvider
+import com.example.ZingBite.data.models.AuthResponse
 import com.example.ZingBite.data.models.OAuthRequest
+import com.example.ZingBite.data.remote.ApiResponse
+import com.example.ZingBite.data.remote.safeApiCall
 import kotlinx.coroutines.launch
 
 abstract class BaseAuthViewModel(open val foodApi: FoodApi) : ViewModel() {
     private val googleAuthUiProvider = GoogleAuthUiProvider()
+    var error:String = ""
+    var errorDescription:String = ""
     abstract fun loading()
     abstract fun onGoogleError(msg: String)
     abstract fun onSocialLoginSuccess(token: String)
     fun onGoogleClicked(context: ComponentActivity){
         initiateGoogleLogin(context)
     }
+
     protected fun initiateGoogleLogin(context: ComponentActivity){
         viewModelScope.launch {
+            loading()
             try {
-                Log.d("SignInViewModel", "Starting Google Sign-In flow")
-                loading()
                 val credentialManager = CredentialManager.create(context)
-                Log.d("SignInViewModel", "Created CredentialManager")
-
                 try {
                     val response = googleAuthUiProvider.signIn(
                         context,
                         credentialManager
                     )
-                    Log.d("SignInViewModel", "Got response from Google Sign-In: ${response != null}")
-
-                    if(response != null) {
-                        Log.d("SignInViewModel", "Google Sign-In successful, token length: ${response.token.length}")
-                        val request = OAuthRequest(
-                            token = response.token,
-                            provider = "google"
-                        )
-                        Log.d("SignInViewModel", "Making OAuth request to backend")
-                        try {
-                            val res = foodApi.oAuth(request)
-                            Log.d("SignInViewModel", "Got response from OAuth endpoint: ${res != null}")
-                            if(res.token.isNotEmpty()){
-                                onSocialLoginSuccess(res.token)
-                            }
-                            else {
-                                onGoogleError("Failed")
-                            }
-                        } catch (e: Exception) {
-                            onGoogleError("Failed")
-                        }
-                    }
-                    else {
-                        onGoogleError("Failed")
+                    fetchFoodAppToken(response.token, "google"){
+                        onGoogleError(it)
                     }
                 } catch (e: GetCredentialException) {
                     Log.e("SignInViewModel", "Error during credential retrieval: ${e.message}", e)
@@ -69,6 +50,33 @@ abstract class BaseAuthViewModel(open val foodApi: FoodApi) : ViewModel() {
                 Log.e("SignInViewModel", "Error during Google Sign-In", e)
                 e.printStackTrace()
                 onGoogleError("Failed")
+            }
+        }
+    }
+    private fun fetchFoodAppToken(token: String, provider: String, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val request = OAuthRequest(
+                token = token, provider = provider
+            )
+            val res = safeApiCall { foodApi.oAuth(request) }
+            when (res) {
+                is ApiResponse.Success -> {
+                    onSocialLoginSuccess(res.data.token)
+                }
+
+                else -> {
+                    val error = (res as? ApiResponse.Error)?.code
+                    if (error != null) {
+                        when (error) {
+                            401 -> onError("Invalid Token")
+                            500 -> onError("Server Error")
+                            404 -> onError("Not Found")
+                            else -> onError("Failed")
+                        }
+                    } else {
+                        onError("Failed")
+                    }
+                }
             }
         }
     }
