@@ -17,11 +17,12 @@ import com.example.ZingBite.data.models.SignUpRequest
 import com.example.ZingBite.ui.features.auth.login.SignInViewModel.SigInNavigationEvent
 import com.example.ZingBite.ui.features.auth.login.SignInViewModel.SignInEvent
 import com.example.ZingBite.data.auth.GoogleAuthUiProvider
+import com.example.ZingBite.ui.features.auth.BaseAuthViewModel
 
 
 @HiltViewModel
-class SignUpViewModel @Inject constructor(val foodApi: FoodApi) :
-    ViewModel() {
+class SignUpViewModel @Inject constructor(override val foodApi: FoodApi) :
+    BaseAuthViewModel(foodApi) {
     val googleAuthUiProvider = GoogleAuthUiProvider()
     private val _uiState = MutableStateFlow<SignupEvent>(SignupEvent.Nothing)
     val uiState = _uiState.asStateFlow()
@@ -74,9 +75,22 @@ class SignUpViewModel @Inject constructor(val foodApi: FoodApi) :
         }
     }
 
-    fun loading() {
+    override fun loading() {
         viewModelScope.launch {
             _uiState.value = SignupEvent.Loading
+        }
+    }
+
+    override fun onGoogleError(msg: String) {
+        viewModelScope.launch {
+            _uiState.value=SignupEvent.Error
+        }
+    }
+
+    override fun onSocialLoginSuccess(token: String) {
+        viewModelScope.launch {
+            _uiState.value = SignupEvent.Success
+            _navigationEvent.emit(SigupNavigationEvent.NavigateToHome)
         }
     }
 

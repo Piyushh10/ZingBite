@@ -1,8 +1,6 @@
 package com.example.ZingBite.ui.features.auth.login
 
 import android.content.Context
-import androidx.credentials.CredentialManager
-import androidx.lifecycle.ViewModel
 import com.example.ZingBite.data.FoodApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -12,17 +10,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
-import com.example.ZingBite.data.auth.GoogleAuthUiProvider
 import com.example.ZingBite.data.models.SignInRequest
-import com.example.ZingBite.data.models.SignUpRequest
-import android.util.Log
-import androidx.credentials.exceptions.GetCredentialException
-import com.example.ZingBite.data.models.OAuthRequest
+import androidx.activity.ComponentActivity
+import androidx.credentials.CredentialManager
+import com.example.ZingBite.data.auth.GoogleAuthUiProvider
+import com.example.ZingBite.ui.features.auth.BaseAuthViewModel
+import com.example.ZingBite.ui.features.auth.signup.SignUpViewModel.SignupEvent
+import com.example.ZingBite.ui.features.auth.signup.SignUpViewModel.SigupNavigationEvent
 
 @HiltViewModel
 class SignInViewModel @Inject constructor(
-    val foodApi: FoodApi) : ViewModel(){
-        val googleAuthUiProvider = GoogleAuthUiProvider()
+    override val foodApi: FoodApi) : BaseAuthViewModel(foodApi){
+    val googleAuthUiProvider = GoogleAuthUiProvider()
     private val _uiState = MutableStateFlow<SignInEvent>(SignInEvent.Nothing)
     val uiState = _uiState.asStateFlow()
 
@@ -63,57 +62,19 @@ class SignInViewModel @Inject constructor(
 
     fun onGoogleSignInClicked(context : Context) {
         viewModelScope.launch {
+            _uiState.value = SignInEvent.Loading
             try {
-                Log.d("SignInViewModel", "Starting Google Sign-In flow")
-                _uiState.value = SignInEvent.Loading
-                val credentialManager = CredentialManager.create(context)
-                Log.d("SignInViewModel", "Created CredentialManager")
-                
-                try {
-                    val response = googleAuthUiProvider.signIn(
-                        context,
-                        credentialManager
-                    )
-                    Log.d("SignInViewModel", "Got response from Google Sign-In: ${response != null}")
-                    
-                    if(response != null) {
-                        Log.d("SignInViewModel", "Google Sign-In successful, token length: ${response.token.length}")
-                        val request = OAuthRequest(
-                            token = response.token,
-                            provider = "google"
-                        )
-                        Log.d("SignInViewModel", "Making OAuth request to backend")
-                        try {
-                            val res = foodApi.oAuth(request)
-                            Log.d("SignInViewModel", "Got response from OAuth endpoint: ${res != null}")
-                            if(res.token.isNotEmpty()){
-                                Log.d("SignInViewModel", "OAuth successful, token length: ${res.token.length}")
-                                _uiState.value = SignInEvent.Success
-                                _navigationEvent.emit(SigInNavigationEvent.NavigateToHome)
-                            }
-                            else {
-                                Log.e("SignInViewModel", "Empty token in OAuth response")
-                                _uiState.value = SignInEvent.Error
-                            }
-                        } catch (e: Exception) {
-                            Log.e("SignInViewModel", "Error during OAuth request: ${e.message}", e)
-                            _uiState.value = SignInEvent.Error
-                        }
-                    }
-                    else {
-                        Log.e("SignInViewModel", "Null response from Google Sign-In")
-                        _uiState.value = SignInEvent.Error
-                    }
-                } catch (e: GetCredentialException) {
-                    Log.e("SignInViewModel", "Error during credential retrieval: ${e.message}", e)
-                    if (e.message?.contains("canceled", ignoreCase = true) == true) {
-                        _uiState.value = SignInEvent.Nothing
-                    } else {
-                        _uiState.value = SignInEvent.Error
-                    }
+                val response = googleAuthUiProvider.signIn(
+                    context,
+                    CredentialManager.create(context)
+                )
+                if(response != null) {
+                    _uiState.value = SignInEvent.Success
+                    _navigationEvent.emit(SigInNavigationEvent.NavigateToHome)
+                } else {
+                    _uiState.value = SignInEvent.Error
                 }
-            } catch (e: Exception) {
-                Log.e("SignInViewModel", "Error during Google Sign-In", e)
+            } catch(e: Exception) {
                 e.printStackTrace()
                 _uiState.value = SignInEvent.Error
             }
@@ -138,13 +99,19 @@ class SignInViewModel @Inject constructor(
         object Loading : SignInEvent()
     }
 
-    fun loading() {
+    override fun loading() {
         viewModelScope.launch {
             _uiState.value = SignInEvent.Loading
         }
     }
 
-    fun onSocialLoginSuccess(token: String) {
+    override fun onGoogleError(msg: String) {
+        viewModelScope.launch {
+            _uiState.value=SignInEvent.Error
+        }
+    }
+
+    override fun onSocialLoginSuccess(token: String) {
         viewModelScope.launch {
             _uiState.value = SignInEvent.Success
             _navigationEvent.emit(SigInNavigationEvent.NavigateToHome)
